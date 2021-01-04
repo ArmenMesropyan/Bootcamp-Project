@@ -1,7 +1,6 @@
 const Bootcamp = require('../models/Bootcamp');
 const ErrorResponse = require('../utils/error.response');
 const asyncHandler = require('../middlewares/async.handler');
-const geocoder = require('../utils/geocoder');
 
 // @desc        Get all bootcamps
 // @route       GET /api/v1/bootcamps
@@ -21,7 +20,8 @@ exports.getAllBootcamps = asyncHandler(async (req, res) => {
 
     let query = Bootcamp.find(JSON.parse(queryStr))
         .skip(startIndex)
-        .limit(+limit);
+        .limit(+limit)
+        .populate('courses');
 
     if (select) query = query.select(select.split(',').join(' '));
 
@@ -50,7 +50,8 @@ exports.getAllBootcamps = asyncHandler(async (req, res) => {
 exports.getSingleBootcamp = asyncHandler(async (req, res, next) => {
     const {id} = req.params;
 
-    const bootcamp = await Bootcamp.findById(id);
+    const bootcamp = await Bootcamp.findById(id).populate('courses');
+    console.log(bootcamp.courses);
 
     if (!bootcamp) {
         return next(

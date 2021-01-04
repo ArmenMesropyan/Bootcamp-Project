@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config({path: './config/config.env'});
 
 const bootcampRoutes = require('./routes/bootcamps');
+const coursesRoutes = require('./routes/courses');
 const morgan = require('morgan');
 const connectDb = require('./config/db');
 const errorHandler = require('./middlewares/error.handler');
@@ -25,6 +26,7 @@ app.use(express.json());
 
 // Routers
 app.use('/api/v1/bootcamps', bootcampRoutes);
+app.use('/api/v1/courses', coursesRoutes);
 
 app.use(errorHandler);
 
