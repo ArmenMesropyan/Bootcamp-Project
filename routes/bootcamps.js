@@ -3,6 +3,10 @@ const bootcampsControllers = require('../controllers/bootcamps');
 const router = express.Router();
 
 router
+    .route('/radius/:distance')
+    .get(bootcampsControllers.getBootcampsInRadius);
+
+router
     .route('/')
     .get(bootcampsControllers.getAllBootcamps)
     .post(bootcampsControllers.createBootcamp);

@@ -1,15 +1,44 @@
 const Bootcamp = require('../models/Bootcamp');
 const ErrorResponse = require('../utils/error.response');
 const asyncHandler = require('../middlewares/async.handler');
+const geocoder = require('../utils/geocoder');
 
 // @desc        Get all bootcamps
 // @route       GET /api/v1/bootcamps
 // @access      Public
-exports.getAllBootcamps = asyncHandler(async (req, res, next) => {
-    const bootcamps = await Bootcamp.find();
+exports.getAllBootcamps = asyncHandler(async (req, res) => {
+    // Selecting select field to select specific fields
+    const {select, sort, limit = 10, page = 1, ...requestQuery} = req.query;
+
+    // Create operators ($gt, $gte, etc...)
+    const queryStr = JSON.stringify(requestQuery).replace(
+        /\b(gt|gte|lt|lte|in)\b/g,
+        match => `$${match}`,
+    );
+
+    const startIndex = (page - 1) * limit;
+    const total = await Bootcamp.countDocuments();
+
+    let query = Bootcamp.find(JSON.parse(queryStr))
+        .skip(startIndex)
+        .limit(+limit);
+
+    if (select) query = query.select(select.split(',').join(' '));
+
+    if (sort) query = query.sort(sort);
+    else query = query.sort('-createdAt');
+
+    const bootcamps = await query;
+
+    // Calculate page count
+
+    const pageCount = total / limit < 1 ? 0 : Math.ceil(total / limit);
 
     res.status(200).json({
         success: true,
+        currentPage: +page,
+        pageSize: +limit,
+        pageCount,
         count: bootcamps.length,
         data: bootcamps,
     });
@@ -87,5 +116,34 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: {},
+    });
+});
+
+// @desc        Get bootcamps by geolocation
+// @route       GET /api/v1/bootcamps/radius/:distance
+// @access      Public
+exports.getBootcampsInRadius = asyncHandler(async (req, res) => {
+    const {distance} = req.params;
+    const {lat, lng} = req.body;
+
+    // Calc distance meter
+    const meterDistance = distance * 1000;
+
+    const bootcamps = await Bootcamp.find({
+        location: {
+            $near: {
+                $geometry: {
+                    type: 'Point',
+                    coordinates: [lng, lat],
+                },
+                $maxDistance: meterDistance,
+            },
+        },
+    });
+
+    res.status(200).json({
+        success: true,
+        count: bootcamps.length,
+        data: bootcamps,
     });
 });

@@ -123,4 +123,6 @@ BootcampSchema.pre('save', async function (next) {
     next();
 });
 
+BootcampSchema.index({location: '2dsphere'});
+
 module.exports = model('Bootcamp', BootcampSchema);
