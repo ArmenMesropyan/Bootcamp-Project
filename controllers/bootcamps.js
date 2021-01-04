@@ -51,7 +51,6 @@ exports.getSingleBootcamp = asyncHandler(async (req, res, next) => {
     const {id} = req.params;
 
     const bootcamp = await Bootcamp.findById(id).populate('courses');
-    console.log(bootcamp.courses);
 
     if (!bootcamp) {
         return next(

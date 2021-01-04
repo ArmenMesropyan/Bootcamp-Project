@@ -1,4 +1,5 @@
 const ErrorResponse = require('../utils/error.response');
+const statuses = require('../statuses');
 
 const errorHandler = (err, req, res, next) => {
     let error = {...err, message: err.message};
@@ -17,7 +18,7 @@ const errorHandler = (err, req, res, next) => {
     if (err.code === 11000) {
         const message = 'Found resource with same field';
 
-        error = new ErrorResponse(message, 400);
+        error = new ErrorResponse(message, 400, statuses.UNIQUE);
     }
 
     // Mongoose validation error
@@ -27,7 +28,7 @@ const errorHandler = (err, req, res, next) => {
         error = new ErrorResponse(message, 400);
     }
 
-    res.status(err.statusCode || 500).json({
+    res.status(error.statusCode || 500).json({
         success: false,
         error: error.message || 'Server Error',
         ...(error.status ? {status: error.status} : {}),
