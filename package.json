@@ -25,6 +25,7 @@
     "colors": "^1.4.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-fileupload": "^1.2.0",
     "mongoose": "^5.11.9",
     "node-geocoder": "^3.27.0",
     "slugify": "^1.4.6"

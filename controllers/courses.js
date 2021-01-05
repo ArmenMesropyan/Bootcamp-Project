@@ -7,23 +7,21 @@ const Bootcamp = require('../models/Bootcamp');
 // @route       GET /api/v1/courses
 // @route       GET /api/v1/bootcamps/courses/:bootcampId
 // @access      Public
-exports.getCourses = asyncHandler(async (req, res, next) => {
-    let query;
+exports.getCourses = asyncHandler(async (req, res) => {
+    // advanced.results middleware for sorting, filtering, etc..
+    const {advancedResults} = req;
 
-    if (req.params.bootcampId)
-        query = Course.find({bootcamp: req.params.bootcampId});
-    else query = Course.find();
+    if (req.params.bootcampId) {
+        const courses = await Course.find({bootcamp: req.params.bootcampId});
 
-    const courses = await query.populate({
-        path: 'bootcamp',
-        select: 'name description',
-    });
+        return res.status(200).json({
+            success: true,
+            count: courses.length,
+            data: courses,
+        });
+    }
 
-    res.status(200).json({
-        success: true,
-        count: courses.length,
-        data: courses,
-    });
+    res.status(200).json(advancedResults);
 });
 
 // @desc        Get single course
