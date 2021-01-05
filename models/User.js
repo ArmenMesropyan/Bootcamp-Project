@@ -39,7 +39,6 @@ const UserSchema = new Schema(
 );
 
 // Encrypt password using bcrypt
-
 UserSchema.pre('save', async function (next) {
     if (!this.password) {
         return next();
@@ -53,7 +52,6 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Sign JWT and return
-
 UserSchema.methods.getSignedJwtToken = function () {
     return jwt.sign({id: this._id}, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
