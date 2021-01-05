@@ -7,6 +7,7 @@ const advancedResults = require('../middlewares/advanced.results');
 
 // Include another routes
 const courseRouter = require('./courses');
+const {authMiddleware, roleMiddleware} = require('../middlewares/auth');
 
 // Re-route to another routers
 router.use('/courses/:bootcampId', courseRouter);
@@ -21,14 +22,32 @@ router
         advancedResults(Bootcamp, 'courses'),
         bootcampsControllers.getAllBootcamps,
     )
-    .post(bootcampsControllers.createBootcamp);
+    .post(
+        authMiddleware,
+        roleMiddleware('publisher', 'admin'),
+        bootcampsControllers.createBootcamp,
+    );
 
 router
     .route('/:id')
     .get(bootcampsControllers.getSingleBootcamp)
-    .put(bootcampsControllers.updateBootcamp)
-    .delete(bootcampsControllers.deleteBootcamp);
+    .put(
+        authMiddleware,
+        roleMiddleware('publisher', 'admin'),
+        bootcampsControllers.updateBootcamp,
+    )
+    .delete(
+        authMiddleware,
+        roleMiddleware('publisher', 'admin'),
+        bootcampsControllers.deleteBootcamp,
+    );
 
-router.route('/:id/photo').put(bootcampsControllers.bootcampPhotoUpload);
+router
+    .route('/:id/photo')
+    .put(
+        authMiddleware,
+        roleMiddleware('publisher', 'admin'),
+        bootcampsControllers.bootcampPhotoUpload,
+    );
 
 module.exports = router;

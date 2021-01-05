@@ -37,6 +37,11 @@ const CourseSchema = new Schema({
         ref: 'Bootcamp',
         required: true,
     },
+    user: {
+        type: Schema.ObjectId,
+        ref: 'User',
+        required: true,
+    },
 });
 
 // Static method to get average bootcamp courses cost

@@ -1,54 +1,57 @@
-const advancedResults = (model, populate) => async (req, res, next) => {
-    // Selecting select field to select specific fields
-    const {select, sort, limit = 10, page = 1, ...requestQuery} = req.query;
+const asyncHandler = require('./async.handler');
 
-    // Create operators ($gt, $gte, etc...)
-    const queryStr = JSON.stringify(requestQuery).replace(
-        /\b(gt|gte|lt|lte|in)\b/g,
-        match => `$${match}`,
-    );
+const advancedResults = (model, populate) =>
+    asyncHandler(async (req, res, next) => {
+        // Selecting select field to select specific fields
+        const {select, sort, limit = 10, page = 1, ...requestQuery} = req.query;
 
-    // Total counts and skip index for pagination
+        // Create operators ($gt, $gte, etc...)
+        const queryStr = JSON.stringify(requestQuery).replace(
+            /\b(gt|gte|lt|lte|in)\b/g,
+            match => `$${match}`,
+        );
 
-    const startIndex = (page - 1) * limit;
-    const total = await model.countDocuments();
+        // Total counts and skip index for pagination
 
-    let query = model
-        .find(JSON.parse(queryStr))
-        .skip(startIndex)
-        .limit(+limit);
+        const startIndex = (page - 1) * limit;
+        const total = await model.countDocuments();
 
-    // Select query
+        let query = model
+            .find(JSON.parse(queryStr))
+            .skip(startIndex)
+            .limit(+limit);
 
-    if (select) query = query.select(select.split(',').join(' '));
+        // Select query
 
-    // Sort query
+        if (select) query = query.select(select.split(',').join(' '));
 
-    if (sort) query = query.sort(sort);
-    else query = query.sort('-createdAt');
+        // Sort query
 
-    // Populating another models
+        if (sort) query = query.sort(sort);
+        else query = query.sort('-createdAt');
 
-    if (populate) query = query.populate(populate);
+        // Populating another models
 
-    // Executing query
+        if (populate) query = query.populate(populate);
 
-    const resource = await query;
+        // Executing query
 
-    // Calculate page count
+        const resource = await query;
 
-    const pageCount = total / limit < 1 ? 0 : Math.ceil(total / limit);
+        // Calculate page count
 
-    req.advancedResults = {
-        success: true,
-        currentPage: +page,
-        pageSize: +limit,
-        pageCount,
-        count: resource.length,
-        data: resource,
-    };
+        const pageCount = total / limit < 1 ? 0 : Math.ceil(total / limit);
 
-    next();
-};
+        req.advancedResults = {
+            success: true,
+            currentPage: +page,
+            pageSize: +limit,
+            pageCount,
+            count: resource.length,
+            data: resource,
+        };
+
+        next();
+    });
 
 module.exports = advancedResults;
